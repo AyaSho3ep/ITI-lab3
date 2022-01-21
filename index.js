@@ -17,6 +17,9 @@ require('./mongoConnect')
 
 
 app.use(bodyParser.json())
+
+app.use('/users', userRouter)
+
 /*
 The Complete Node.js Developer Course
 NodeJS - The Complete Guide
@@ -61,62 +64,88 @@ git commit -m "message"
 git push
 */
 
-app.post("/users/login", async (req, res, next) => {
-      const {username, password} = req.body
-      const user = await User.findOne({ username })
-      if(!user) return next({status:401, message:"username or passord is incorrect"})
-      if(user.password !== password) next({status:401, message:"username or passord is incorrect"})
-      const payload = {id:user.id }
+// app.post("/users/login", async (req, res, next) => {
+//       const {username, password} = req.body
+//       const user = await User.findOne({ username })
+//       if(!user) return next({status:401, message:"username or passord is incorrect"})
+//       if(user.password !== password) next({status:401, message:"username or passord is incorrect"})
+//       const payload = {id:user.id }
+//       const token= jwt.sign(payload, serverConfig.secret, {expiresIn: "1d"});
+//       return res.status(200).send({message:"success", token})
 
-      return res.status(200).send({message:"Logged in Successfully"}) 
-})
+// })
 
-app.post("/users", async (req, res, next) => {
-  try {
-      const { username, age, password } = req.body;
-      const user = new User({username, age, password})
-      await user.save()
-      res.send({ message: "sucess" });
-  } catch (error) {
-      next({ status: 422, message: error.message });
-  }
-});
+// app.post("/users", async (req, res, next) => {
+//   try {
+//       const { username, age, password } = req.body;
+//       const user = new User({username, age, password})
+//       await user.save()
+//       res.send({ message: "sucess" });
+//   } catch (error) {
+//       next({ status: 422, message: error.message });
+//   }
+// });
 
-app.patch("/users/:userId", auth , async (req, res, next) => {
-  if(req.user.id!==req.params.userId) next({status:403, message:"Authorization error"})
-  try {
-    const {password, age} = req.body
-    req.user.password = password
-    req.user.age = age
-    await req.user.save()
-    res.send("sucess")
-  } catch (error) {
+// app.patch("/users/:userId", auth , async (req, res, next) => {
+//   if(req.user.id!==req.params.userId) next({status:403, message:"Authorization error"})
+//   try {
+//     const {password, age} = req.body
+//     req.user.password = password
+//     req.user.age = age
+//     await req.user.save()
+//     res.send("sucess")
+//   } catch (error) {
 
-  }
+//   }
 
-});
-
+// });
 
 
-app.get('/users', async (req,res,next)=>{
-  try {
 
-  res.send(users)
-  } catch (error) {
-  next({ status: 500, internalMessage: error.message });
-  }
+// app.get('/users', auth, async (req,res,next)=>{
+//   try {
 
-})
+// const query= req.query.age?  {age:req.query} : {}
+
+// const users= await User.find(query,{password:0})
+
+//   res.send(users)
+//   } catch (error) {
+//   next({ status: 500, internalMessage: error.message });
+//   }
+
+// })
+
+// app.delete('/users', auth, async (req,res,next)=>{
+//   try {
+
+// const query= req.query.age?  {age:req.query} : {}
+
+// const users= await User.find(query,{password:0})
+
+//   res.send(users)
+//   } catch (error) {
+//   next({ status: 500, internalMessage: error.message });
+//   }
+
+// })
+
+
+app.use(logRequest)
 
 
 app.use((err,req,res,next)=>{
-  res.status(err.status).send(err.message)
+  if(err.status >= 500){
+    console.log(err.internalMessage)
+    res.status(500).send({error: "internal server error"})
+  }
+    res.status(err.status).send(err.message)
 })
-
 
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
 })
+
 
 // mongodb, 
